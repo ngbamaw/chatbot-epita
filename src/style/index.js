@@ -123,8 +123,9 @@ const App = styled.div`
         }
     }
     .main-content {
-        width: 80%;
+        width: calc(80% - 24px);
         height: calc(90% - 24px);
+        margin-left: 24px;
         display: flex;
         flex-direction: column;
         .discussion-section {
