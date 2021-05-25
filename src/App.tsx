@@ -52,6 +52,13 @@ const App: React.FC = () => {
             discussionSection.current.style.height = `${scrollbarWrapper.current.offsetHeight}px`;
     }, [discussionSection]);
 
+    const enterCommand = () => {
+        if (command) {
+            setMessageList([...messageList, { author: 'me', text: command }]);
+            setCommand('');
+        }
+    };
+
     return (
         <Style ref={container}>
             <div className="header-app">
@@ -106,16 +113,7 @@ const App: React.FC = () => {
                         />
                     </div>
 
-                    <button
-                        className="round-btn send-btn"
-                        type="button"
-                        onClick={() => {
-                            if (command) {
-                                setMessageList([...messageList, { author: 'me', text: command }]);
-                                setCommand('');
-                            }
-                        }}
-                    >
+                    <button className="round-btn send-btn" type="button" onClick={enterCommand}>
                         <img src={SendIcon} alt="send" />
                     </button>
                 </div>
