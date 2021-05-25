@@ -110,8 +110,10 @@ const App: React.FC = () => {
                         className="round-btn send-btn"
                         type="button"
                         onClick={() => {
-                            setMessageList([...messageList, { author: 'me', text: command }]);
-                            setCommand('');
+                            if (command) {
+                                setMessageList([...messageList, { author: 'me', text: command }]);
+                                setCommand('');
+                            }
                         }}
                     >
                         <img src={SendIcon} alt="send" />
