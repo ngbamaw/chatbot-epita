@@ -59,6 +59,12 @@ const App: React.FC = () => {
         }
     };
 
+    const onKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            enterCommand();
+        }
+    };
+
     return (
         <Style ref={container}>
             <div className="header-app">
@@ -108,6 +114,7 @@ const App: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Write command"
+                            onKeyDown={onKeyDown}
                             onChange={(e) => setCommand(e.target.value)}
                             value={command}
                         />
