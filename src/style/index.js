@@ -117,8 +117,8 @@ const App = styled.div`
         }
 
         .scrollbar {
-            flex: 1;
-            height: 100px;
+            flex: 1 1 auto;
+            height: 0px;
             overflow: auto;
         }
     }
@@ -130,8 +130,9 @@ const App = styled.div`
         flex-direction: column;
         .discussion-section {
             display: flex;
-            justify-content: flex-end;
+            /* justify-content: flex-end; */
             flex-direction: column;
+            flex-wrap: nowrap;
             position: relative;
             width: 100%;
         }
@@ -162,6 +163,10 @@ const App = styled.div`
         border-radius: 20px;
         max-width: 70%;
         font-size: 18px;
+        flex-shrink: 0;
+    }
+    .message:first-of-type {
+        margin-top: auto;
     }
     .message:last-of-type {
         margin-bottom: 5px;
@@ -178,6 +183,37 @@ const App = styled.div`
         align-self: auto;
         margin-left: 10px;
         margin-bottom: 10px;
+    }
+    .presentation {
+        padding: 0;
+        overflow: hidden;
+        background-color: #e0e0e0;
+        align-self: auto;
+        margin-left: 10px;
+        margin-bottom: 10px;
+        max-width: 50%;
+        min-height: 200px;
+        .img {
+            background-size: cover;
+            height: 200px;
+        }
+        img {
+            max-width: 100%;
+        }
+        .description {
+            padding: 20px;
+            width: fit-content;
+            .title {
+                font-weight: bold;
+                font-size: 20px;
+                margin-bottom: 10px;
+                width: fit-content;
+            }
+            .text {
+                font-size: 14px;
+                width: fit-content;
+            }
+        }
     }
     .pending-info {
         /*
