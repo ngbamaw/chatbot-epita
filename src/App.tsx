@@ -4,6 +4,9 @@ import SendIcon from './assets/send-icon.png';
 import PlusIcon from './assets/plus.png';
 import Style from './style';
 import 'simplebar/dist/simplebar.min.css';
+import useCommand from './hooks/useCommand';
+import bots from './commands.json';
+import { Bot } from './utils/parseCommand';
 
 interface Message {
     author?: string;
@@ -22,12 +25,12 @@ const MeMessage: React.FC<{ children: string }> = ({ children }) => (
     </div>
 );
 
-const Bot: React.FC<{ name: string; description: string }> = ({ name, description }) => (
+const BotElement: React.FC<{ name: string; description: string }> = ({ name, description }) => (
     <div className="bot">
         <div className="icon" />
         <div className="description">
             <div className="name">{name}</div>
-            <p className="text">Description of the bot, what it can do, how it’s work, etc...</p>
+            <p className="text">{description}</p>
         </div>
     </div>
 );
@@ -38,6 +41,7 @@ const App: React.FC = () => {
         { author: 'receiver', text: 'Test receiver' },
     ]);
     const [responseWriting, setResponseWriting] = React.useState<boolean>(false);
+    const [response, handleCommand] = useCommand(bots as Bot[]);
     const [command, setCommand] = React.useState<string>('');
     const discussionSection = React.useRef<HTMLDivElement>(null);
     const container = React.useRef<HTMLDivElement>(null);
@@ -81,7 +85,7 @@ const App: React.FC = () => {
                     </div>
                 </div>
                 <SimpleBar className="scrollbar">
-                    <Bot
+                    <BotElement
                         name="Bot's name"
                         description="Description of the bot, what it can do, how it’s work, etc..."
                     />
