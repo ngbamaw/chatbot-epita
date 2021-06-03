@@ -1,27 +1,48 @@
 import { Command } from 'commander';
+import stringArgv from 'string-argv';
 
-enum TypeAccess {
-    GET_PARAMS = 'GET_PARAMS',
+interface AccessNone {
+    type: 'NONE';
+}
+interface AccessGet {
+    type: 'GET_PARAMS';
+    tokens: { name: string; value: string }[];
+}
+interface AccessHeader {
+    type: 'HEADER_PARAMS';
+    tokens: { name: string; value: string }[];
 }
 
 export interface Bot {
     name: string;
-    access: { type: TypeAccess; name: string; token: string };
+    access: AccessNone | AccessGet | AccessHeader;
     commands: { [command: string]: BotCommand };
 }
 
 interface BotCommand {
     endpoint: { method: 'GET' | 'POST' | 'DELETE' | 'UPDATE'; url: string };
-    predefinedParams: { [key: string]: string };
+    predefinedParams?: { [key: string]: string };
     params: Param[];
+    responseFormat?: ResponseFormat;
 }
 
+interface ResponseFormat {
+    type: 'MultiplePresentation' | 'Presentation';
+    path: string;
+    fields: {
+        img: string;
+        title: string;
+        text: string;
+        defaultImg?: string;
+    };
+}
 interface Param {
     name: string;
     aliases: string[];
 }
 
 export interface RequestInfo {
+    responseFormat?: ResponseFormat;
     botName: string;
     headers: Record<string, string>;
     body: Record<string, any>;
@@ -29,9 +50,10 @@ export interface RequestInfo {
 }
 
 const getParams = new URLSearchParams();
+const headers: Record<string, string> = { 'Access-Control-Allow-Origin': '*' };
 
 const extractArgs = (command: BotCommand, args: string[]) => {
-    const { predefinedParams, params } = command;
+    const { predefinedParams = {}, params } = command;
     for (const [name, value] of Object.entries(predefinedParams)) {
         getParams.set(name, value);
     }
@@ -48,7 +70,7 @@ const extractArgs = (command: BotCommand, args: string[]) => {
 };
 
 export const parseCommand = (bots: Bot[], input: string): RequestInfo => {
-    const [name, command, ...values] = input.split(' ');
+    const [name, command, ...values] = stringArgv(input);
 
     const bot = bots.find((b) => b.name === name);
 
@@ -63,21 +85,27 @@ export const parseCommand = (bots: Bot[], input: string): RequestInfo => {
         extractArgs(bot.commands[command], params);
 
         switch (bot.access.type) {
-            case TypeAccess.GET_PARAMS:
-                getParams.set(bot.access.name, bot.access.token);
+            case 'GET_PARAMS':
+                for (const { name: key, value } of bot.access.tokens) getParams.set(key, value);
+                break;
+            case 'HEADER_PARAMS':
+                for (const { name: key, value } of bot.access.tokens) headers[key] = value;
+                break;
+            case 'NONE':
                 break;
             default:
                 throw new Error('Unexepected access token type');
         }
 
-        const { endpoint } = bot.commands[command];
+        const { endpoint, responseFormat } = bot.commands[command];
         const url = `${endpoint.url}?${getParams.toString()}`;
 
         return {
-            headers: {},
+            headers,
             body: {},
             endpoint: { method: endpoint.method, url },
             botName: name,
+            responseFormat,
         };
     }
 
