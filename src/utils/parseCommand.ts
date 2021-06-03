@@ -17,6 +17,7 @@ export interface Bot {
     name: string;
     access: AccessNone | AccessGet | AccessHeader;
     commands: { [command: string]: BotCommand };
+    presentation: string;
 }
 
 interface BotCommand {
@@ -50,7 +51,7 @@ export interface RequestInfo {
 }
 
 const getParams = new URLSearchParams();
-const headers: Record<string, string> = { 'Access-Control-Allow-Origin': '*' };
+const headers: Record<string, string> = {};
 
 const extractArgs = (command: BotCommand, args: string[]) => {
     const { predefinedParams = {}, params } = command;

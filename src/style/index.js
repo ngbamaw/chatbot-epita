@@ -83,7 +83,6 @@ const App = styled.div`
             display: flex;
             height: 50px;
             margin-left: 24px;
-            margin-bottom: 24px;
             .search-bot {
                 flex: 1;
                 height: 50px;
@@ -96,13 +95,20 @@ const App = styled.div`
         .bot {
             display: flex;
             margin-left: 24px;
-            margin-bottom: 24px;
+            margin-top: 24px;
+            &:last-of-type {
+                margin-bottom: 24px;
+            }
             .icon {
                 height: 100px;
                 width: 100px;
                 border-radius: 50%;
-                background-color: #e9e9e9;
+                background-size: 70%;
+                background-repeat: no-repeat;
+                background-position-x: center;
+                background-position-y: center;
                 margin-right: 18px;
+                box-shadow: #cccccc 0 0 14px 0px;
             }
             .description {
                 width: 60%;
@@ -191,14 +197,14 @@ const App = styled.div`
         align-self: auto;
         margin-left: 10px;
         margin-bottom: 10px;
-        max-width: 50%;
-        min-height: 200px;
+        width: 500px;
+        min-height: 50px;
         .img {
             background-size: cover;
             height: 200px;
         }
         img {
-            max-width: 100%;
+            width: 100%;
         }
         .description {
             padding: 20px;
