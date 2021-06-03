@@ -15,7 +15,8 @@ import { Bot } from './utils/parseCommand';
 
 interface Message {
     author?: string;
-    text: string;
+    payload: any;
+    type?: string;
 }
 
 interface PresentationData {
@@ -23,6 +24,9 @@ interface PresentationData {
     img: string;
     text: string;
 }
+
+const limitString = (str: string, limit: number) =>
+    str.length > limit ? `${str.substring(0, limit)}...` : str;
 
 const ReceiverMessage: React.FC<{ children: string }> = ({ children }) => (
     <div className="message receiver">
@@ -35,14 +39,19 @@ const MeMessage: React.FC<{ children: string }> = ({ children }) => (
         <p>{children}</p>
     </div>
 );
+const decodeHtml = (html: string) => {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = html;
+    return txt.value;
+};
 
 const PresentationMessage: React.FC<PresentationData> = ({ title, img, text }) => (
     <div className="message presentation">
         {/* <div className="img" style={{ backgroundImage: `url(${img})` }} /> */}
         <img alt={title} src={img} />
         <div className="description">
-            {title && <p className="title">{title}</p>}
-            {text && <p className="text">{text}</p>}
+            {title && <p className="title">{decodeHtml(title)}</p>}
+            {text && <p className="text">{limitString(decodeHtml(text), 30)}</p>}
         </div>
     </div>
 );
@@ -66,11 +75,11 @@ const MultiplePresantation: React.FC<{ data: PresentationData[] }> = ({ data }) 
             {/* <div className="img" style={{ backgroundImage: `url(${img})` }} /> */}
             <SwipeableViews enableMouseEvents index={activeStep} onChangeIndex={handleStepChange}>
                 {data.map(({ title, img, text }) => (
-                    <div>
+                    <div style={{ width: '100%' }}>
                         <img alt={title} src={img} />
                         <div className="description">
-                            {title && <p className="title">{title}</p>}
-                            {text && <p className="text">{text}</p>}
+                            {title && <p className="title">{decodeHtml(title)}</p>}
+                            {text && <p className="text">{limitString(decodeHtml(text), 30)}</p>}
                         </div>
                     </div>
                 ))}
@@ -99,9 +108,13 @@ const MultiplePresantation: React.FC<{ data: PresentationData[] }> = ({ data }) 
     );
 };
 
-const BotElement: React.FC<{ name: string; description: string }> = ({ name, description }) => (
+const BotElement: React.FC<{ name: string; description: string; icon: string }> = ({
+    name,
+    description,
+    icon,
+}) => (
     <div className="bot">
-        <div className="icon" />
+        <div className="icon" style={{ backgroundImage: `url(${icon})` }} />
         <div className="description">
             <div className="name">{name}</div>
             <p className="text">{description}</p>
@@ -111,45 +124,67 @@ const BotElement: React.FC<{ name: string; description: string }> = ({ name, des
 
 const App: React.FC = () => {
     const [messageList, setMessageList] = React.useState<Message[]>([
-        { author: 'me', text: 'test' },
-        { author: 'receiver', text: 'Test receiver' },
-        { author: 'me', text: 'test' },
-        { author: 'receiver', text: 'Test receiver' },
-        { author: 'me', text: 'test' },
-        { author: 'receiver', text: 'Test receiver' },
-        { author: 'me', text: 'test' },
-        { author: 'receiver', text: 'Test receiver' },
-        { author: 'me', text: 'test' },
-        { author: 'receiver', text: 'Test receiver' },
-        { author: 'me', text: 'test' },
-        { author: 'receiver', text: 'Test receiver' },
-        { author: 'me', text: 'test' },
-        { author: 'receiver', text: 'Test receiver' },
-        { author: 'me', text: 'test' },
-        { author: 'receiver', text: 'Test receiver' },
-        { author: 'me', text: 'test' },
-        { author: 'receiver', text: 'Test receiver' },
+        { author: 'me', payload: 'test' },
+        { author: 'receiver', payload: 'Test receiver' },
+        { author: 'me', payload: 'test' },
+        { author: 'receiver', payload: 'Test receiver' },
+        { author: 'me', payload: 'test' },
+        { author: 'receiver', payload: 'Test receiver' },
+        { author: 'me', payload: 'test' },
+        { author: 'receiver', payload: 'Test receiver' },
+        { author: 'me', payload: 'test' },
+        { author: 'receiver', payload: 'Test receiver' },
+        { author: 'me', payload: 'test' },
+        { author: 'receiver', payload: 'Test receiver' },
+        { author: 'me', payload: 'test' },
+        { author: 'receiver', payload: 'Test receiver' },
+        { author: 'me', payload: 'test' },
+        { author: 'receiver', payload: 'Test receiver' },
+        { author: 'me', payload: 'test' },
+        { author: 'receiver', payload: 'Test receiver' },
     ]);
     const [responseWriting, setResponseWriting] = React.useState(false);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const [response, handleCommand] = useCommand(bots as Bot[]);
+    const [pending, setPending] = React.useState(false);
+    const [newMessage, setNewMessage] = React.useState(false);
     const [command, setCommand] = React.useState('');
     const discussionSection = React.useRef<HTMLDivElement>(null);
     const container = React.useRef<HTMLDivElement>(null);
     const scrollbarWrapper = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
-        if (scrollbarWrapper.current) scrollbarWrapper.current.scrollTop = 5000;
-    }, [messageList]);
+        if (scrollbarWrapper.current) scrollbarWrapper.current.scrollTop = 10000;
+        const message = messageList[messageList.length - 1];
+        if (message.author === 'me' && newMessage) {
+            handleCommand(message.payload);
+            setPending(true);
+            setNewMessage(false);
+        }
+    }, [messageList, handleCommand, newMessage]);
 
     React.useEffect(() => {
         if (discussionSection.current && scrollbarWrapper.current)
             discussionSection.current.style.height = `${scrollbarWrapper.current.offsetHeight}px`;
     }, [discussionSection]);
 
+    React.useEffect(() => {
+        (async () => {
+            if (response && pending) {
+                const { response: data, botName } = response;
+                const { payload, type } = await data;
+                setPending(false);
+                setMessageList([...messageList, { author: botName, payload, type }]);
+            }
+        })();
+    }, [messageList, response, pending]);
+
     const enterCommand = () => {
         if (command) {
-            setMessageList([...messageList, { author: 'me', text: command }]);
+            setMessageList([...messageList, { author: 'me', payload: command }]);
             setCommand('');
+            setNewMessage(true);
         }
     };
 
@@ -175,10 +210,9 @@ const App: React.FC = () => {
                     </div>
                 </div>
                 <SimpleBar className="scrollbar">
-                    <BotElement
-                        name="Bot's name"
-                        description="Description of the bot, what it can do, how it’s work, etc..."
-                    />
+                    {bots.map(({ name, description, icon }) => (
+                        <BotElement name={name} description={description} icon={icon} />
+                    ))}
                 </SimpleBar>
             </div>
             <div className="main-content">
@@ -187,10 +221,16 @@ const App: React.FC = () => {
                     scrollableNodeProps={{ ref: scrollbarWrapper }}
                 >
                     <div className="discussion-section" ref={discussionSection}>
-                        {messageList.map(({ author, text }) => {
-                            if (author === 'me') return <MeMessage>{text}</MeMessage>;
-                            return <ReceiverMessage>{text}</ReceiverMessage>;
+                        {messageList.map(({ author, payload, type }) => {
+                            if (author === 'me') return <MeMessage>{payload}</MeMessage>;
+                            switch (type) {
+                                case 'MultiplePresentation':
+                                    return <MultiplePresantation data={payload} />;
+                                default:
+                                    return <ReceiverMessage>{payload}</ReceiverMessage>;
+                            }
                         })}
+                        {/*
                         <PresentationMessage
                             img="https://cdn.pixabay.com/photo/2013/11/28/10/03/river-219972_960_720.jpg"
                             title="Title"
@@ -226,7 +266,7 @@ const App: React.FC = () => {
                                 },
                             ]}
                         />
-
+                        */}
                         {responseWriting && (
                             <div className="pending-info">
                                 <div className="circle" />
@@ -244,6 +284,7 @@ const App: React.FC = () => {
                             onKeyDown={onKeyDown}
                             onChange={(e) => setCommand(e.target.value)}
                             value={command}
+                            autoComplete="on"
                         />
                     </div>
 
